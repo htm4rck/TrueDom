@@ -10,10 +10,10 @@ import { audit, inconsistencies, lots, pendingDomains, pendingRecipients, report
 type View = 'upload' | 'lots' | 'domains' | 'recipients' | 'domainLists' | 'recipientLists' | 'inconsistencies' | 'reports' | 'audit';
 
 const titles: Record<View, { title: string; subtitle: string; action: string; icon: string }> = {
-  upload: { title: 'Carga de lote DLP', subtitle: 'Validacion estructural, evidencia y procesamiento mensual.', action: 'Validar archivo', icon: 'upload-cloud' },
+  upload: { title: 'Carga de lote DLP', subtitle: 'Validacion estructural, evidencia y procesamiento mensual.', action: 'Validar archivo', icon: 'cloud-upload' },
   lots: { title: 'Consulta de lotes', subtitle: 'Seguimiento por periodo, estado y volumen procesado.', action: 'Nuevo lote', icon: 'database-zap' },
   domains: { title: 'Bandeja de dominios pendientes', subtitle: 'Clasificacion administrativa de dominios no conocidos.', action: 'Validar seleccion', icon: 'globe-lock' },
-  recipients: { title: 'Bandeja de destinatarios pendientes', subtitle: 'Validaciones asignadas al usuario Alicorp responsable.', action: 'Responder', icon: 'mail-question' },
+  recipients: { title: 'Bandeja de destinatarios pendientes', subtitle: 'Validaciones asignadas al usuario Alicorp responsable.', action: 'Responder', icon: 'mail-question-mark' },
   domainLists: { title: 'Listas de dominios', subtitle: 'Catalogos blanco y negro con activacion e historial.', action: 'Agregar dominio', icon: 'shield-check' },
   recipientLists: { title: 'Listas de destinatarios', subtitle: 'Destinatarios seguros/no seguros por usuario o globales.', action: 'Agregar destinatario', icon: 'user-check' },
   inconsistencies: { title: 'Inconsistencias', subtitle: 'Decisiones contradictorias y resolucion administrativa.', action: 'Resolver', icon: 'badge-alert' },
@@ -72,9 +72,9 @@ const titles: Record<View, { title: string; subtitle: string; action: string; ic
                 <tr>@for (header of headers; track header) { <th class="px-6 py-3">{{ header }}</th> }</tr>
               </thead>
               <tbody>
-                @for (row of rows; track row[0]) {
+                @for (row of rows; track $index) {
                   <tr class="border-t">
-                    @for (cell of row; track cell) { <td class="px-6 py-4" [class.font-medium]="$index === 0">{{ cell }}</td> }
+                    @for (cell of row; track $index) { <td class="px-6 py-4" [class.font-medium]="$index === 0">{{ cell }}</td> }
                   </tr>
                 }
               </tbody>

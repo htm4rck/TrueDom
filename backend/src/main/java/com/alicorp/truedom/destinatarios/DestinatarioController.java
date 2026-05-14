@@ -1,42 +1,57 @@
 package com.alicorp.truedom.destinatarios;
 
+import com.alicorp.truedom.destinatarios.entity.CatalogoDestinatarioBlanco;
+import com.alicorp.truedom.destinatarios.entity.CatalogoDestinatarioNegro;
+import com.alicorp.truedom.destinatarios.entity.PendienteValidacionDestinatario;
+import com.alicorp.truedom.destinatarios.service.DestinatarioService;
 import com.alicorp.truedom.shared.ApiResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/destinatarios")
 public class DestinatarioController {
+    private final DestinatarioService service;
+
+    public DestinatarioController(DestinatarioService service) {
+        this.service = service;
+    }
+
     @GetMapping("/mis-pendientes")
-    public ApiResponse<List<DestinatarioPendienteDto>> myPending() {
-        return new ApiResponse<>(List.of(
-                new DestinatarioPendienteDto(1L, "proveedor.qa@gmail.com", "gmail.com", "INC-90812", "PENDIENTE"),
-                new DestinatarioPendienteDto(2L, "auditoria@partner.pe", "partner.pe", "INC-90901", "VENCIDO")
-        ));
+    public ApiResponse<List<PendienteValidacionDestinatario>> misPendientes(@RequestParam String correo) {
+        return new ApiResponse<>(service.listarMisPendientes(correo));
     }
 
     @PostMapping("/pendientes/{id}/validar")
-    public ApiResponse<Map<String, Object>> validate(@PathVariable Long id, @Valid @RequestBody ValidateRecipientRequest request) {
-        return new ApiResponse<>(Map.of("pendienteId", id, "decision", request.decision(), "estado", "RESPONDIDO"));
+    public ApiResponse<Void> validar(@PathVariable Long id, @Valid @RequestBody ValidarDestinatarioRequest req) {
+        service.validar(id, req.decision(), req.justificacion(), req.usuario());
+        return new ApiResponse<>(null);
     }
 
     @GetMapping("/blancos")
-    public ApiResponse<List<String>> whiteList() {
-        return new ApiResponse<>(List.of("proveedor.qa@gmail.com", "auditoria@partner.pe"));
+    public ApiResponse<List<CatalogoDestinatarioBlanco>> blancos() {
+        return new ApiResponse<>(service.listarBlancos());
     }
 
     @GetMapping("/negros")
-    public ApiResponse<List<String>> blackList() {
-        return new ApiResponse<>(List.of("contacto@dropbox-transfer.com"));
+    public ApiResponse<List<CatalogoDestinatarioNegro>> negros() {
+        return new ApiResponse<>(service.listarNegros());
     }
 
-    public record ValidateRecipientRequest(@NotBlank String decision, @NotBlank String justificacion) {
+    @DeleteMapping("/blancos/{id}")
+    public ApiResponse<Void> eliminarBlanco(@PathVariable Long id, @RequestParam String usuario) {
+        service.eliminarBlanco(id, usuario);
+        return ApiResponse.ok(null, "Destinatario eliminado de lista blanca");
     }
 
-    public record DestinatarioPendienteDto(Long id, String destinatario, String dominio, String incidente, String estado) {
+    @DeleteMapping("/negros/{id}")
+    public ApiResponse<Void> eliminarNegro(@PathVariable Long id, @RequestParam String usuario) {
+        service.eliminarNegro(id, usuario);
+        return ApiResponse.ok(null, "Destinatario eliminado de lista negra");
     }
+
+    public record ValidarDestinatarioRequest(@NotBlank String decision, @NotBlank String justificacion, @NotBlank String usuario) {}
 }

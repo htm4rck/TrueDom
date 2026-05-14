@@ -35,7 +35,7 @@ import {
       @for (section of navigation(); track section.id) {
         <div class="flex flex-col px-4">
           <!-- Section title -->
-          <div class="px-2.5 py-1.5 text-sm font-semibold text-blue-400">
+          <div class="px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-[#8FA3B8]">
             {{ section.label }}
 
             <!-- Section description -->
@@ -72,8 +72,8 @@ import {
               <a
                 cdkMonitorElementFocus
                 ngTreeItem
-                routerLinkActive="bg-neutral-700/10 dark:bg-neutral-300/10"
-                class="navigation-item flex cursor-pointer items-center gap-x-2 rounded-lg px-2.5 py-2 select-none hover:bg-neutral-700/10 dark:hover:bg-neutral-300/10"
+                routerLinkActive="bg-[#12344D] text-[#2D7FF9]"
+                class="navigation-item flex cursor-pointer items-center gap-x-2 rounded-lg px-2.5 py-2 text-[#8FA3B8] select-none hover:bg-[#0F2E46] hover:text-[#E6EDF3]"
                 [parent]="parent"
                 [value]="node.id"
                 [label]="node.label"

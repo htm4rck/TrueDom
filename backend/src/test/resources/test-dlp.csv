@@ -1,0 +1,4 @@
+Nombre Politica,User Group,From_user,#Groups_source,#Time hora,#Dlp_incident_id,Fecha,Usuario Ext,Dominio Ext,DestinatarioExt,Correo Usuario Alicorp,Vicepresidencia,Direccion Gerencia,Unidad Organizativa,Nombre Posicion
+Proteccion datos,Supply,jperez,GRP-S,2026-05-01,INC-001,2026-05-01,ext1,gmail.com,prov@gmail.com,jperez@alicorp.com.pe,VP Supply,Dir Log,UO Compras,Analista
+Envio masivo,Finanzas,mlopez,GRP-F,2026-05-01,INC-002,2026-05-01,ext2,unknown.io,contact@unknown.io,mlopez@alicorp.com.pe,VP Fin,Dir Cont,UO Tes,Contador
+Adjuntos,RRHH,agarcia,GRP-R,2026-05-02,INC-003,2026-05-02,ext3,blocked.org,spam@blocked.org,agarcia@alicorp.com.pe,VP RRHH,Dir Tal,UO Sel,Recruiter

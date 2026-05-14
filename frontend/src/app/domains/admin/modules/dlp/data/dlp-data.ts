@@ -2,7 +2,7 @@ export const kpis = [
   { label: 'Registros cargados', value: '180,426', icon: 'database', tone: 'text-blue-600' },
   { label: 'Avance proceso', value: '87.4%', icon: 'activity', tone: 'text-emerald-600' },
   { label: 'Dominios pendientes', value: '18', icon: 'globe-lock', tone: 'text-amber-600' },
-  { label: 'Destinatarios pendientes', value: '4,218', icon: 'mail-question', tone: 'text-sky-600' },
+  { label: 'Destinatarios pendientes', value: '4,218', icon: 'mail-question-mark', tone: 'text-sky-600' },
   { label: 'Inconsistencias abiertas', value: '7', icon: 'badge-alert', tone: 'text-red-600' },
   { label: 'Casos vencidos', value: '126', icon: 'alarm-clock', tone: 'text-orange-600' },
 ];

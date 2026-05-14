@@ -1,55 +1,18 @@
 import { Routes } from '@angular/router';
 
 const routes: Routes = [
-  {
-    path: 'dashboard',
-    loadComponent: () => import('./features/dashboard'),
-  },
-  {
-    path: 'carga-lote',
-    loadComponent: () => import('./features/operation-page').then((m) => m.OperationPage),
-    data: { view: 'upload' },
-  },
-  {
-    path: 'lotes',
-    loadComponent: () => import('./features/operation-page').then((m) => m.OperationPage),
-    data: { view: 'lots' },
-  },
-  {
-    path: 'dominios-pendientes',
-    loadComponent: () => import('./features/operation-page').then((m) => m.OperationPage),
-    data: { view: 'domains' },
-  },
-  {
-    path: 'destinatarios-pendientes',
-    loadComponent: () => import('./features/operation-page').then((m) => m.OperationPage),
-    data: { view: 'recipients' },
-  },
-  {
-    path: 'listas-dominios',
-    loadComponent: () => import('./features/operation-page').then((m) => m.OperationPage),
-    data: { view: 'domainLists' },
-  },
-  {
-    path: 'listas-destinatarios',
-    loadComponent: () => import('./features/operation-page').then((m) => m.OperationPage),
-    data: { view: 'recipientLists' },
-  },
-  {
-    path: 'inconsistencias',
-    loadComponent: () => import('./features/operation-page').then((m) => m.OperationPage),
-    data: { view: 'inconsistencies' },
-  },
-  {
-    path: 'reportes',
-    loadComponent: () => import('./features/operation-page').then((m) => m.OperationPage),
-    data: { view: 'reports' },
-  },
-  {
-    path: 'auditoria',
-    loadComponent: () => import('./features/operation-page').then((m) => m.OperationPage),
-    data: { view: 'audit' },
-  },
+  { path: 'dashboard', loadComponent: () => import('./features/dashboard') },
+  { path: 'carga-lote', loadComponent: () => import('./features/carga-lote') },
+  { path: 'lotes', loadComponent: () => import('./features/lotes') },
+  { path: 'lotes/:id', loadComponent: () => import('./features/lote-detalle') },
+  { path: 'lotes/:id/resultado', loadComponent: () => import('./features/procesamiento-resultado') },
+  { path: 'dominios-pendientes', loadComponent: () => import('./features/dominios-pendientes') },
+  { path: 'destinatarios-pendientes', loadComponent: () => import('./features/destinatarios-pendientes') },
+  { path: 'listas-dominios', loadComponent: () => import('./features/listas-dominios') },
+  { path: 'listas-destinatarios', loadComponent: () => import('./features/listas-destinatarios') },
+  { path: 'inconsistencias', loadComponent: () => import('./features/inconsistencias') },
+  { path: 'reportes', loadComponent: () => import('./features/reportes') },
+  { path: 'auditoria', loadComponent: () => import('./features/auditoria') },
 ];
 
 export default routes;

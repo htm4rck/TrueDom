@@ -1,5 +1,7 @@
 package com.alicorp.truedom.inconsistencias;
 
+import com.alicorp.truedom.inconsistencias.entity.InconsistenciaValidacion;
+import com.alicorp.truedom.inconsistencias.service.InconsistenciaService;
 import com.alicorp.truedom.shared.ApiResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -11,22 +13,27 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/inconsistencias")
 public class InconsistenciaController {
+    private final InconsistenciaService service;
+
+    public InconsistenciaController(InconsistenciaService service) {
+        this.service = service;
+    }
+
     @GetMapping
-    public ApiResponse<List<InconsistenciaDto>> list() {
-        return new ApiResponse<>(List.of(
-                new InconsistenciaDto(1L, "proveedor.qa@gmail.com", "gmail.com", 8, 3, "ABIERTA"),
-                new InconsistenciaDto(2L, "contacto@partner.pe", "partner.pe", 4, 4, "EN_REVISION")
-        ));
+    public ApiResponse<List<InconsistenciaValidacion>> listar() {
+        return new ApiResponse<>(service.listarAbiertas());
+    }
+
+    @GetMapping("/{id}")
+    public ApiResponse<Map<String, Object>> detalle(@PathVariable Long id) {
+        return new ApiResponse<>(service.detalle(id));
     }
 
     @PostMapping("/{id}/resolver")
-    public ApiResponse<Map<String, Object>> resolve(@PathVariable Long id, @Valid @RequestBody ResolveRequest request) {
-        return new ApiResponse<>(Map.of("inconsistenciaId", id, "decisionFinal", request.decisionFinal(), "estado", "CERRADA"));
+    public ApiResponse<Void> resolver(@PathVariable Long id, @Valid @RequestBody ResolverRequest req) {
+        service.resolver(id, req.decisionFinal(), req.justificacion(), req.usuario());
+        return new ApiResponse<>(null);
     }
 
-    public record ResolveRequest(@NotBlank String decisionFinal, @NotBlank String justificacion) {
-    }
-
-    public record InconsistenciaDto(Long id, String destinatario, String dominio, int usuariosSeguro, int usuariosNoSeguro, String estado) {
-    }
+    public record ResolverRequest(@NotBlank String decisionFinal, @NotBlank String justificacion, @NotBlank String usuario) {}
 }

@@ -1,0 +1,35 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: truedom
+      POSTGRES_USER: truedom
+      POSTGRES_PASSWORD: truedom_local
+    ports:
+      - "5499:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U truedom"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  backend:
+    build: ./backend
+    environment:
+      POSTGRES_URL: jdbc:postgresql://db:5432/truedom?stringtype=unspecified
+      POSTGRES_USER: truedom
+      POSTGRES_PASSWORD: truedom_local
+      SPRING_FLYWAY_ENABLED: "true"
+      SPRING_FLYWAY_LOCATIONS: classpath:db/migration,filesystem:/migrations
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./database/migrations:/migrations
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
