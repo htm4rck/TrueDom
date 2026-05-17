@@ -72,6 +72,7 @@ public class LoteCargaAsyncService {
                 reg.setUserGroup(cellStr(row, 1, formatter));
                 reg.setFromUser(cellStr(row, 2, formatter));
                 reg.setGroupsSource(cellStr(row, 3, formatter));
+                reg.setFechaEvento(parseFecha(row, 4, 6, formatter));
                 reg.setDlpIncidentId(cellStr(row, 5, formatter));
                 reg.setUsuarioExt(cellStr(row, 7, formatter));
                 reg.setDominioExt(dominio);
@@ -168,5 +169,27 @@ public class LoteCargaAsyncService {
         if (cell == null) return null;
         var val = formatter.formatCellValue(cell);
         return val != null && !val.isBlank() ? val.trim() : null;
+    }
+
+    private java.time.OffsetDateTime parseFecha(Row row, int colTimestamp, int colFecha, DataFormatter formatter) {
+        // Try col 4 first (full timestamp: "01/31/2026 22:46:35")
+        var ts = cellStr(row, colTimestamp, formatter);
+        if (ts != null) {
+            try {
+                var dtf = java.time.format.DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss");
+                var local = java.time.LocalDateTime.parse(ts, dtf);
+                return local.atOffset(java.time.ZoneOffset.ofHours(-5));
+            } catch (Exception ignored) {}
+        }
+        // Fallback to col 6 (short date: "1/31/26")
+        var fecha = cellStr(row, colFecha, formatter);
+        if (fecha != null) {
+            try {
+                var dtf = java.time.format.DateTimeFormatter.ofPattern("M/d/yy");
+                var local = java.time.LocalDate.parse(fecha, dtf);
+                return local.atStartOfDay().atOffset(java.time.ZoneOffset.ofHours(-5));
+            } catch (Exception ignored) {}
+        }
+        return null;
     }
 }

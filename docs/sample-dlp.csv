@@ -1,6 +1,5 @@
-Nombre Politica,User Group,From_user,#Groups_source,#Time hora,#Dlp_incident_id,Fecha,Usuario Ext,Dominio Ext,DestinatarioExt,Correo Usuario Alicorp,Vicepresidencia,Direccion Gerencia,Unidad Organizativa,Nombre Posicion
-Proteccion datos personales,Supply Chain,jperez,GRP-SUPPLY,2026-05-01 10:30,INC-90001,2026-05-01,externo1,gmail.com,proveedor.qa@gmail.com,jperez@alicorp.com.pe,VP Supply,Dir Logistica,UO Compras,Analista Senior
-Envio externo masivo,Finanzas,mlopez,GRP-FIN,2026-05-01 11:00,INC-90002,2026-05-01,externo2,vendor-docs.io,logistica@vendor-docs.io,mlopez@alicorp.com.pe,VP Finanzas,Dir Contabilidad,UO Tesoreria,Contador
-Adjuntos sensibles,RRHH,agarcia,GRP-RRHH,2026-05-02 09:15,INC-90003,2026-05-02,externo3,dropbox-transfer.com,contacto@dropbox-transfer.com,agarcia@alicorp.com.pe,VP RRHH,Dir Talento,UO Seleccion,Recruiter
-Informacion financiera,Supply Chain,jperez,GRP-SUPPLY,2026-05-02 14:00,INC-90004,2026-05-02,externo4,temporary-mail.org,temp123@temporary-mail.org,jperez@alicorp.com.pe,VP Supply,Dir Logistica,UO Compras,Analista Senior
-Proteccion datos personales,Marketing,crodriguez,GRP-MKT,2026-05-03 08:45,INC-90005,2026-05-03,externo5,gmail.com,contacto.mkt@gmail.com,crodriguez@alicorp.com.pe,VP Marketing,Dir Digital,UO Ecommerce,Community Manager
+Usuario,Destinatario,Fecha,Asunto,Tamaño
+jperez@alicorp.com.pe,cliente@gmail.com,2026-05-01,Propuesta comercial,1024
+mgarcia@alicorp.com.pe,proveedor@hotmail.com,2026-05-02,Cotización,2048
+alopez@alicorp.com.pe,socio@yahoo.com,2026-05-03,Contrato,4096
+rrodriguez@alicorp.com.pe,externo@outlook.com,2026-05-04,Factura,512

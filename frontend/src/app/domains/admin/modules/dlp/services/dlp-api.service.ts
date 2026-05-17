@@ -12,6 +12,10 @@ export interface PendienteDominio {
   dominio: string;
   totalRegistros: number;
   totalUsuarios: number;
+  totalVp: number;
+  vicepresidencias: string | null;
+  ultimaActividad: string | null;
+  politicas: string | null;
   estado: string;
 }
 
@@ -111,6 +115,17 @@ export class DlpApiService {
   // --- Destinatarios ---
   getMisPendientes(correo: string): Observable<PendienteDestinatario[]> {
     return this.http.get<ApiResponse<PendienteDestinatario[]>>(`${this.base}/destinatarios/mis-pendientes?correo=${correo}`).pipe(map((r) => r.data));
+  }
+
+  getPendientesDestinatarios(anios?: number[], meses?: number[]): Observable<PendienteDestinatario[]> {
+    let params = '';
+    if (anios?.length) params += anios.map((a) => `anios=${a}`).join('&');
+    if (meses?.length) params += (params ? '&' : '') + meses.map((m) => `meses=${m}`).join('&');
+    return this.http.get<ApiResponse<PendienteDestinatario[]>>(`${this.base}/destinatarios/pendientes${params ? '?' + params : ''}`).pipe(map((r) => r.data));
+  }
+
+  getPeriodosDisponibles(): Observable<{ anio: number; meses: number[] }[]> {
+    return this.http.get<ApiResponse<{ anio: number; meses: number[] }[]>>(`${this.base}/destinatarios/periodos-disponibles`).pipe(map((r) => r.data));
   }
 
   validarDestinatario(id: number, decision: string, justificacion: string, usuario: string): Observable<void> {

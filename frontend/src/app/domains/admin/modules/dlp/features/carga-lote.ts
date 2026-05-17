@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnDestroy } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -130,7 +130,7 @@ import { WebSocketService, ProgresoLote } from '../services/websocket.service';
     </div>
   `,
 })
-export default class CargaLotePage implements OnDestroy {
+export default class CargaLotePage {
   private http = inject(HttpClient);
   private wsService = inject(WebSocketService);
   private router = inject(Router);
@@ -138,9 +138,8 @@ export default class CargaLotePage implements OnDestroy {
   protected archivo = signal<File | null>(null);
   protected subiendo = signal(false);
   protected error = signal<string | null>(null);
-  protected progreso = signal<ProgresoLote | null>(null);
+  protected progreso = this.wsService.progreso;
   protected loteId = signal<number | null>(null);
-  private unsubscribe: (() => void) | null = null;
 
   protected mes = '5';
   protected anio = 2026;
@@ -178,9 +177,8 @@ export default class CargaLotePage implements OnDestroy {
       next: (res) => {
         const id = res.data?.id;
         this.loteId.set(id);
-        this.progreso.set({ loteId: id, fase: 'INICIANDO', registrosLeidos: 0, totalEstimado: 0, porcentaje: 0, dominiosEncontrados: 0, destinatariosEncontrados: 0, mensaje: 'Conectando...' });
-        // Subscribe to WebSocket for progress
-        this.unsubscribe = this.wsService.subscribeLote(id, (p) => this.progreso.set(p));
+        this.wsService.progreso.set({ loteId: id, fase: 'INICIANDO', registrosLeidos: 0, totalEstimado: 0, porcentaje: 0, dominiosEncontrados: 0, destinatariosEncontrados: 0, mensaje: 'Conectando...' });
+        this.wsService.subscribeLote(id);
       },
       error: (err) => {
         this.error.set(err.error?.error || err.error?.message || 'Error al iniciar la carga');
@@ -190,10 +188,12 @@ export default class CargaLotePage implements OnDestroy {
   }
 
   irAResultados() {
-    this.router.navigate(['/admin/lotes', this.loteId(), 'resultado']);
+    const id = this.loteId() ?? this.progreso()?.loteId;
+    this.wsService.clear();
+    this.router.navigate(['/admin/lotes', id, 'resultado']);
   }
 
   ngOnDestroy() {
-    if (this.unsubscribe) this.unsubscribe();
+    // Don't clear — let progress persist in service
   }
 }

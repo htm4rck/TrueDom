@@ -28,6 +28,18 @@ public class PendienteValidacionDominio {
     @Column(name = "fecha_creacion", nullable = false)
     private OffsetDateTime fechaCreacion = OffsetDateTime.now();
 
+    @Column(name = "total_vp")
+    private Integer totalVp = 0;
+
+    @Column(name = "vicepresidencias", columnDefinition = "TEXT")
+    private String vicepresidencias;
+
+    @Column(name = "ultima_actividad")
+    private OffsetDateTime ultimaActividad;
+
+    @Column(name = "politicas", columnDefinition = "TEXT")
+    private String politicas;
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public Long getLoteId() { return loteId; }
@@ -42,4 +54,12 @@ public class PendienteValidacionDominio {
     public void setEstado(String estado) { this.estado = estado; }
     public OffsetDateTime getFechaCreacion() { return fechaCreacion; }
     public void setFechaCreacion(OffsetDateTime fechaCreacion) { this.fechaCreacion = fechaCreacion; }
+    public Integer getTotalVp() { return totalVp; }
+    public void setTotalVp(Integer totalVp) { this.totalVp = totalVp; }
+    public String getVicepresidencias() { return vicepresidencias; }
+    public void setVicepresidencias(String vicepresidencias) { this.vicepresidencias = vicepresidencias; }
+    public OffsetDateTime getUltimaActividad() { return ultimaActividad; }
+    public void setUltimaActividad(OffsetDateTime ultimaActividad) { this.ultimaActividad = ultimaActividad; }
+    public String getPoliticas() { return politicas; }
+    public void setPoliticas(String politicas) { this.politicas = politicas; }
 }

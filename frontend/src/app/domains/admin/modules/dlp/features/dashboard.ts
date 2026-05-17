@@ -185,9 +185,15 @@ export default class DlpDashboard {
 
   protected workflowSteps = computed(() => {
     const estado = this.data().estadoLote;
-    const steps = ['CARGADO', 'VALIDADO', 'PROCESADO', 'CON_OBSERVACIONES', 'CERRADO'];
-    const activeIdx = steps.indexOf(estado);
-    return steps.map((s, i) => ({ label: s.replace('_', ' '), active: i <= activeIdx }));
+    const steps = [
+      { key: 'CARGANDO', label: 'Carga' },
+      { key: 'VALIDADO', label: 'Validado' },
+      { key: 'PROCESANDO', label: 'Procesando' },
+      { key: 'CON_OBSERVACIONES', label: 'Observaciones' },
+      { key: 'PROCESADO', label: 'Completado' },
+    ];
+    const activeIdx = steps.findIndex(s => s.key === estado);
+    return steps.map((s, i) => ({ label: s.label, active: i <= activeIdx }));
   });
 
   protected tooltip: Signal<ApexTooltip> = computed(() => ({ theme: this.theming.isDark() ? 'dark' : 'light' }));

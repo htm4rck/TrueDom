@@ -2,6 +2,7 @@ package com.alicorp.truedom.lotes;
 
 import com.alicorp.truedom.lotes.entity.LoteCargaDlp;
 import com.alicorp.truedom.lotes.repository.*;
+import com.alicorp.truedom.lotes.service.LoteProcesamientoService;
 import com.alicorp.truedom.lotes.service.LoteService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,9 @@ class LoteServiceTest {
 
     @Autowired
     private LoteService service;
+
+    @Autowired
+    private LoteProcesamientoService procesamientoService;
 
     @Autowired
     private LoteCargaDlpRepository loteRepo;
@@ -66,7 +70,7 @@ class LoteServiceTest {
         LoteCargaDlp lote = service.cargar(2026, 6, file, "test-user");
 
         // Process
-        LoteCargaDlp processed = service.procesar(lote.getId(), "test-user");
+        LoteCargaDlp processed = procesamientoService.procesar(lote.getId(), "test-user");
 
         assertEquals(3, processed.getRegistrosProcesados());
         assertEquals("CON_OBSERVACIONES", processed.getEstado());

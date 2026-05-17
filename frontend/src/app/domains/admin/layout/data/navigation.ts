@@ -25,12 +25,6 @@ export const NAVIGATION: NavigationItem[] = [
         route: '/admin/dashboard',
       },
       {
-        id: 'cargas',
-        label: 'Cargas mensuales',
-        icon: 'cloud-upload',
-        route: '/admin/carga-lote',
-      },
-      {
         id: 'lotes',
         label: 'Procesamiento',
         icon: 'database-zap',
@@ -44,7 +38,7 @@ export const NAVIGATION: NavigationItem[] = [
     children: [
       {
         id: 'dominios-pendientes',
-        label: 'Dominios pendientes',
+        label: 'Evaluación de Dominios',
         icon: 'globe-lock',
         route: '/admin/dominios-pendientes',
       },

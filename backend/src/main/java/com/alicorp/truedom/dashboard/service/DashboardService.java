@@ -1,7 +1,5 @@
 package com.alicorp.truedom.dashboard.service;
 
-import com.alicorp.truedom.dominios.repository.CatalogoDominicoBlancoRepository;
-import com.alicorp.truedom.dominios.repository.CatalogoDominioNegroRepository;
 import com.alicorp.truedom.dominios.repository.PendienteValidacionDominioRepository;
 import com.alicorp.truedom.destinatarios.repository.PendienteValidacionDestinatarioRepository;
 import com.alicorp.truedom.inconsistencias.repository.InconsistenciaValidacionRepository;
@@ -17,22 +15,16 @@ public class DashboardService {
     private final DetalleLoteDlpRepository detalleRepo;
     private final PendienteValidacionDominioRepository pendDomRepo;
     private final PendienteValidacionDestinatarioRepository pendDestRepo;
-    private final CatalogoDominicoBlancoRepository domBlancoRepo;
-    private final CatalogoDominioNegroRepository domNegroRepo;
     private final InconsistenciaValidacionRepository inconsistenciaRepo;
 
     public DashboardService(LoteCargaDlpRepository loteRepo, DetalleLoteDlpRepository detalleRepo,
                             PendienteValidacionDominioRepository pendDomRepo,
                             PendienteValidacionDestinatarioRepository pendDestRepo,
-                            CatalogoDominicoBlancoRepository domBlancoRepo,
-                            CatalogoDominioNegroRepository domNegroRepo,
                             InconsistenciaValidacionRepository inconsistenciaRepo) {
         this.loteRepo = loteRepo;
         this.detalleRepo = detalleRepo;
         this.pendDomRepo = pendDomRepo;
         this.pendDestRepo = pendDestRepo;
-        this.domBlancoRepo = domBlancoRepo;
-        this.domNegroRepo = domNegroRepo;
         this.inconsistenciaRepo = inconsistenciaRepo;
     }
 
@@ -40,27 +32,42 @@ public class DashboardService {
         var lotes = loteRepo.findAllByOrderByFechaCargaDesc();
         var ultimoLote = lotes.isEmpty() ? null : lotes.get(0);
 
-        long totalCargados = lotes.stream().mapToInt(l -> l.getRegistrosCargados()).sum();
-        long totalProcesados = lotes.stream().mapToInt(l -> l.getRegistrosProcesados()).sum();
-        long dominiosPendientes = pendDomRepo.findByEstadoOrderByTotalRegistrosDesc("PENDIENTE").size();
-        long destinatariosPendientes = pendDestRepo.count();
-        long inconsistenciasAbiertas = inconsistenciaRepo.countByEstado("ABIERTA");
-        long dominiosSeguros = domBlancoRepo.count();
-        long dominiosNoSeguros = domNegroRepo.count();
+        if (ultimoLote == null) {
+            return Map.of(
+                    "periodo", "N/A", "estadoLote", "SIN_LOTES",
+                    "registrosCargados", 0, "registrosProcesados", 0,
+                    "porcentajeAvance", 0.0,
+                    "dominiosPendientes", 0L, "dominiosSeguros", 0L,
+                    "dominiosNoSeguros", 0L, "destinatariosPendientes", 0L,
+                    "inconsistenciasAbiertas", 0L
+            );
+        }
 
-        double avance = totalCargados > 0 ? (totalProcesados * 100.0 / totalCargados) : 0;
+        Long loteId = ultimoLote.getId();
+        long totalDetalles = detalleRepo.countByLoteId(loteId);
+        long domSeguros = detalleRepo.countByLoteIdAndEstado(loteId, "DOMINIO_SEGURO")
+                + detalleRepo.countByLoteIdAndEstado(loteId, "DESTINATARIO_SEGURO");
+        long domNoSeguros = detalleRepo.countByLoteIdAndEstado(loteId, "DOMINIO_NO_SEGURO")
+                + detalleRepo.countByLoteIdAndEstado(loteId, "DESTINATARIO_NO_SEGURO");
+        long domPendientes = detalleRepo.countByLoteIdAndEstado(loteId, "DOMINIO_PENDIENTE");
+        long destPendientes = detalleRepo.countByLoteIdAndEstado(loteId, "DESTINATARIO_PENDIENTE");
+        long sinProcesar = detalleRepo.countByLoteIdAndEstado(loteId, "PENDIENTE_PROCESO");
+        long inconsistencias = inconsistenciaRepo.countByEstado("ABIERTA");
+
+        long procesados = totalDetalles - sinProcesar;
+        double avance = totalDetalles > 0 ? (procesados * 100.0 / totalDetalles) : 0;
 
         return Map.of(
-                "periodo", ultimoLote != null ? ultimoLote.getPeriodoAnio() + "-" + String.format("%02d", ultimoLote.getPeriodoMes()) : "N/A",
-                "estadoLote", ultimoLote != null ? ultimoLote.getEstado() : "SIN_LOTES",
-                "registrosCargados", totalCargados,
-                "registrosProcesados", totalProcesados,
+                "periodo", ultimoLote.getPeriodoAnio() + "-" + String.format("%02d", ultimoLote.getPeriodoMes()),
+                "estadoLote", ultimoLote.getEstado(),
+                "registrosCargados", ultimoLote.getRegistrosCargados(),
+                "registrosProcesados", ultimoLote.getRegistrosProcesados(),
                 "porcentajeAvance", Math.round(avance * 10.0) / 10.0,
-                "dominiosPendientes", dominiosPendientes,
-                "dominiosSeguros", dominiosSeguros,
-                "dominiosNoSeguros", dominiosNoSeguros,
-                "destinatariosPendientes", destinatariosPendientes,
-                "inconsistenciasAbiertas", inconsistenciasAbiertas
+                "dominiosPendientes", domPendientes,
+                "dominiosSeguros", domSeguros,
+                "dominiosNoSeguros", domNoSeguros,
+                "destinatariosPendientes", destPendientes,
+                "inconsistenciasAbiertas", inconsistencias
         );
     }
 }

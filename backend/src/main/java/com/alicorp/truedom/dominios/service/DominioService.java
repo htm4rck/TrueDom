@@ -1,6 +1,10 @@
 package com.alicorp.truedom.dominios.service;
 
 import com.alicorp.truedom.auditoria.service.AuditoriaService;
+import com.alicorp.truedom.destinatarios.entity.PendienteValidacionDestinatario;
+import com.alicorp.truedom.destinatarios.repository.CatalogoDestinatarioBlancoRepository;
+import com.alicorp.truedom.destinatarios.repository.CatalogoDestinatarioNegroRepository;
+import com.alicorp.truedom.destinatarios.repository.PendienteValidacionDestinatarioRepository;
 import com.alicorp.truedom.dominios.entity.CatalogoDominioBlanco;
 import com.alicorp.truedom.dominios.entity.CatalogoDominioNegro;
 import com.alicorp.truedom.dominios.entity.PendienteValidacionDominio;
@@ -11,6 +15,8 @@ import com.alicorp.truedom.lotes.repository.DetalleLoteDlpRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.OffsetDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -20,17 +26,26 @@ public class DominioService {
     private final CatalogoDominicoBlancoRepository blancoRepo;
     private final CatalogoDominioNegroRepository negroRepo;
     private final DetalleLoteDlpRepository detalleRepo;
+    private final PendienteValidacionDestinatarioRepository pendDestRepo;
+    private final CatalogoDestinatarioBlancoRepository destBlancoRepo;
+    private final CatalogoDestinatarioNegroRepository destNegroRepo;
     private final AuditoriaService auditoria;
 
     public DominioService(PendienteValidacionDominioRepository pendienteRepo,
                           CatalogoDominicoBlancoRepository blancoRepo,
                           CatalogoDominioNegroRepository negroRepo,
                           DetalleLoteDlpRepository detalleRepo,
+                          PendienteValidacionDestinatarioRepository pendDestRepo,
+                          CatalogoDestinatarioBlancoRepository destBlancoRepo,
+                          CatalogoDestinatarioNegroRepository destNegroRepo,
                           AuditoriaService auditoria) {
         this.pendienteRepo = pendienteRepo;
         this.blancoRepo = blancoRepo;
         this.negroRepo = negroRepo;
         this.detalleRepo = detalleRepo;
+        this.pendDestRepo = pendDestRepo;
+        this.destBlancoRepo = destBlancoRepo;
+        this.destNegroRepo = destNegroRepo;
         this.auditoria = auditoria;
     }
 
@@ -70,6 +85,9 @@ public class DominioService {
             blanco.setCreadoPor(usuario);
             blancoRepo.save(blanco);
             detalleRepo.updateEstadoByLoteIdAndDominio(pendiente.getLoteId(), pendiente.getDominio(), "DOMINIO_SEGURO");
+
+            // Create destinatario pendientes for users of this domain
+            crearPendientesDestinatario(pendiente.getLoteId(), pendiente.getDominio());
         } else {
             var negro = new CatalogoDominioNegro();
             negro.setDominio(pendiente.getDominio());
@@ -153,6 +171,42 @@ public class DominioService {
                 auditoria.registrar("CATALOGO_DOMINIO_NEGRO", id, "TOGGLE_ACTIVO", usuario,
                         "{\"dominio\":\"" + d.getDominio() + "\",\"activo\":" + d.getActivo() + "}");
             });
+        }
+    }
+
+    private void crearPendientesDestinatario(Long loteId, String dominio) {
+        var detalles = detalleRepo.findByLoteIdAndEstado(loteId, "DOMINIO_SEGURO");
+        var creados = new HashSet<String>();
+
+        for (var det : detalles) {
+            if (!dominio.equals(det.getDominioExt())) continue;
+            var dest = det.getDestinatarioExt();
+            var correo = det.getCorreoUsuarioAlicorp();
+            if (dest == null || correo == null) continue;
+
+            var key = dest.toLowerCase() + "|" + correo.toLowerCase();
+            if (creados.contains(key)) continue;
+
+            // Skip if already in whitelist or blacklist
+            if (destBlancoRepo.existsByDestinatarioAndCorreoUsuarioAlicorpAndActivoTrue(dest, correo)) {
+                detalleRepo.updateEstadoByDestinatarioAndUsuario(loteId, dest, correo, "DESTINATARIO_SEGURO");
+                continue;
+            }
+            if (destNegroRepo.existsByDestinatarioAndCorreoUsuarioAlicorpAndActivoTrue(dest, correo)) {
+                detalleRepo.updateEstadoByDestinatarioAndUsuario(loteId, dest, correo, "DESTINATARIO_NO_SEGURO");
+                continue;
+            }
+
+            var pend = new PendienteValidacionDestinatario();
+            pend.setLoteId(loteId);
+            pend.setDestinatario(dest);
+            pend.setDominio(dominio);
+            pend.setCorreoUsuarioAlicorp(correo);
+            pend.setFechaLimite(OffsetDateTime.now().plusDays(7));
+            pendDestRepo.save(pend);
+
+            detalleRepo.updateEstadoByDestinatarioAndUsuario(loteId, dest, correo, "DESTINATARIO_PENDIENTE");
+            creados.add(key);
         }
     }
 }

@@ -41,6 +41,13 @@ public class DestinatarioService {
         return pendienteRepo.findByCorreoUsuarioAlicorpAndEstado(correoUsuario, "PENDIENTE");
     }
 
+    public List<PendienteValidacionDestinatario> listarPendientesPorLotes(List<Long> loteIds) {
+        if (loteIds == null || loteIds.isEmpty()) {
+            return pendienteRepo.findByEstado("PENDIENTE");
+        }
+        return pendienteRepo.findByEstadoAndLoteIdIn("PENDIENTE", loteIds);
+    }
+
     @Transactional
     public void validar(Long pendienteId, String decision, String justificacion, String usuario) {
         var pendiente = pendienteRepo.findById(pendienteId)

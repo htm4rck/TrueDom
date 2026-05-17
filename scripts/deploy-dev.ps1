@@ -46,6 +46,7 @@ az provider register --namespace Microsoft.App --only-show-errors
 az provider register --namespace Microsoft.OperationalInsights --only-show-errors
 az provider register --namespace Microsoft.ContainerRegistry --only-show-errors
 az provider register --namespace Microsoft.Web --only-show-errors
+az provider register --namespace Microsoft.ContainerInstance --only-show-errors
 az provider register --namespace Microsoft.DBforPostgreSQL --only-show-errors
 az provider register --namespace Microsoft.Storage --only-show-errors
 az provider register --namespace Microsoft.KeyVault --only-show-errors
@@ -65,69 +66,30 @@ $acrLoginServer = az acr show --name $acrName --resource-group $ResourceGroup --
 $acrUser = az acr credential show --name $acrName --query "username" -o tsv
 $acrPassword = az acr credential show --name $acrName --query "passwords[0].value" -o tsv
 
-# --- PostgreSQL Flexible Server ---
-Write-Step "PostgreSQL Flexible Server: $pgServerName"
+# --- PostgreSQL Container Instance (Free Tier) ---
+Write-Step "PostgreSQL Container Instance: $pgServerName"
 $pgExists = $null
-try { $pgExists = az postgres flexible-server show --name $pgServerName --resource-group $ResourceGroup --query "name" -o tsv 2>$null } catch {}
+try { $pgExists = az container show --name $pgServerName --resource-group $ResourceGroup --query "name" -o tsv 2>$null } catch {}
 if (-not $pgExists) {
-    $pgCreated = $false
-    # Intentar en la ubicacion principal
-    try {
-        az postgres flexible-server create `
-            --resource-group $ResourceGroup `
-            --name $pgServerName `
-            --location $Location `
-            --admin-user $pgUser `
-            --admin-password $pgPassword `
-            --sku-name Standard_B1ms `
-            --tier Burstable `
-            --storage-size 32 `
-            --version 16 `
-            --public-access 0.0.0.0 `
-            --only-show-errors 1>$null 2>$null
-        $pgCreated = ($LASTEXITCODE -eq 0)
-    } catch { $pgCreated = $false }
-
-    if (-not $pgCreated) {
-        Write-Host "  Reintentando en eastus..." -ForegroundColor Yellow
-        try {
-            az postgres flexible-server create `
-                --resource-group $ResourceGroup `
-                --name $pgServerName `
-                --location "eastus" `
-                --admin-user $pgUser `
-                --admin-password $pgPassword `
-                --sku-name Standard_B1ms `
-                --tier Burstable `
-                --storage-size 32 `
-                --version 16 `
-                --public-access 0.0.0.0 `
-                --only-show-errors 1>$null 2>$null
-            $pgCreated = ($LASTEXITCODE -eq 0)
-        } catch { $pgCreated = $false }
-    }
-
-    if ($pgCreated) {
-        try {
-            az postgres flexible-server db create `
-                --resource-group $ResourceGroup `
-                --server-name $pgServerName `
-                --database-name $pgDatabase `
-                --only-show-errors 1>$null 2>$null
-        } catch {}
-        Write-Host "  Password generada: $pgPassword" -ForegroundColor Yellow
-    } else {
-        Write-Host "  ADVERTENCIA: No se pudo crear PostgreSQL (restriccion de suscripcion)." -ForegroundColor Yellow
-    }
+    az container create `
+        --resource-group $ResourceGroup `
+        --name $pgServerName `
+        --image postgres:16-alpine `
+        --dns-name-label $pgServerName `
+        --ports 5432 `
+        --os-type Linux `
+        --environment-variables `
+            POSTGRES_DB=$pgDatabase `
+            POSTGRES_USER=$pgUser `
+            POSTGRES_PASSWORD=$pgPassword `
+        --cpu 1 `
+        --memory 1 `
+        --only-show-errors 1>$null
+    Write-Host "  Password generada: $pgPassword" -ForegroundColor Yellow
 } else {
     Write-Host "  Ya existe, reutilizando."
 }
-$pgHost = $null
-try { $pgHost = az postgres flexible-server show --name $pgServerName --resource-group $ResourceGroup --query "fullyQualifiedDomainName" -o tsv 2>$null } catch {}
-if (-not $pgHost) {
-    Write-Host "  ADVERTENCIA: PostgreSQL no disponible. El backend usara H2 en memoria." -ForegroundColor Yellow
-    $pgHost = "localhost"
-}
+$pgHost = "$pgServerName.$Location.azurecontainer.io"
 
 # --- Storage Account ---
 Write-Step "Storage Account: $storageName"
